@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EazyDiner Sales — Lead Desk</title>
+<style>
+  :root{
+    --ink:#1c1917;
+    --paper:#faf8f5;
+    --panel:#ffffff;
+    --line:#e7e2da;
+    --muted:#8a8178;
+    --flame:#ff5a1f;
+    --flame-dark:#e04510;
+    --gold:#c9962c;
+    --green:#2e7d4f;
+    --red:#c23b3b;
+    --shadow: 0 1px 2px rgba(28,25,23,.04), 0 8px 24px -12px rgba(28,25,23,.15);
+    --radius: 10px;
+    font-family: 'Iowan Old Style','Georgia',serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    min-height:100vh;
+  }
+  .display{font-family:'Iowan Old Style','Georgia',serif;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 28px;
+    background:var(--ink);
+    color:#fff;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{
+    width:30px;height:30px;border-radius:8px;
+    background:linear-gradient(135deg,var(--flame),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;color:#fff;
+  }
+  .brand .name{font-family:'Iowan Old Style','Georgia',serif;font-size:18px;letter-spacing:.2px;}
+  .brand .sub{font-size:11px;color:#c9c2b8;letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+  .who{display:flex;align-items:center;gap:14px;font-size:13px;color:#dcd6cc;}
+  .who button{
+    background:transparent;border:1px solid #4a453e;color:#e8e3da;
+    padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;
+  }
+  .who button:hover{background:#2b2723;}
+
+  /* ---------- login ---------- */
+  .login-wrap{
+    min-height:calc(100vh - 60px);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:36px 34px;
+    width:100%;max-width:380px;
+  }
+  .login-card h1{
+    font-family:'Iowan Old Style','Georgia',serif;
+    font-size:24px;margin:0 0 4px;
+  }
+  .login-card p.tag{color:var(--muted);font-size:13px;margin:0 0 24px;}
+  label{font-size:12px;font-weight:600;color:#4a453e;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+  input,select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+    font-size:14px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--flame);outline-offset:1px;}
+  .field{margin-bottom:16px;}
+  .btn{
+    background:var(--flame);color:#fff;border:none;border-radius:8px;
+    padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;
+    transition:background .15s;
+  }
+  .btn:hover{background:var(--flame-dark);}
+  .btn.block{width:100%;}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{background:#f2ede5;}
+  .btn.small{padding:6px 11px;font-size:12px;}
+  .error-msg{color:var(--red);font-size:13px;margin-top:10px;}
+
+  /* ---------- app shell ---------- */
+  .app{display:none;}
+  .container{max-width:1240px;margin:0 auto;padding:26px 28px 60px;}
+
+  .head-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
+  .head-row h2{font-family:'Iowan Old Style','Georgia',serif;font-size:26px;margin:0;}
+  .head-row .stats{display:flex;gap:10px;flex-wrap:wrap;}
+  .stat-chip{
+    background:#fff;border:1px solid var(--line);border-radius:8px;
+    padding:8px 14px;font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:baseline;
+  }
+  .stat-chip b{font-size:16px;color:var(--ink);font-family:'Iowan Old Style','Georgia',serif;}
+
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;margin-bottom:16px;
+  }
+  .toolbar input[type=text]{max-width:230px;}
+  .toolbar select{max-width:190px;}
+  .toolbar .spacer{flex:1;}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  thead th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--line);background:#f6f2ec;
+  }
+  tbody td{padding:12px 14px;border-bottom:1px solid #f0ece4;font-size:13.5px;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fbf7f1;cursor:pointer;}
+  .rname{font-weight:600;}
+  .rid{color:var(--muted);font-size:11.5px;}
+
+  .badge{
+    display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;
+    white-space:nowrap;
+  }
+  .badge.New{background:#e9edf7;color:#3b5bab;}
+  .badge.Contacted{background:#eef2e4;color:#5a7a2a;}
+  .badge.Follow-up.Scheduled,.badge.Followup{background:#fdf0d8;color:#9a6c12;}
+  .badge.Interested{background:#fdeee0;color:var(--flame-dark);}
+  .badge.Negotiation{background:#f3e6f7;color:#7a3b9e;}
+  .badge.Won{background:#e2f3e8;color:var(--green);}
+  .badge.Lost{background:#f9e4e4;color:var(--red);}
+
+  .empty{padding:50px 20px;text-align:center;color:var(--muted);}
+  .empty .btn{margin-top:14px;}
+
+  /* modal / drawer */
+  .overlay{
+    display:none;position:fixed;inset:0;background:rgba(28,25,23,.45);
+    align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;border-radius:14px;max-width:520px;width:100%;
+    max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+  }
+  .modal-head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:20px 24px 14px;border-bottom:1px solid var(--line);
+  }
+  .modal-head h3{margin:0 0 3px;font-family:'Iowan Old Style','Georgia',serif;font-size:19px;}
+  .modal-head .rid{font-size:12px;}
+  .modal-body{padding:20px 24px;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-foot{padding:14px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line);}
+
+  .fu-item{border-bottom:1px solid #f0ece4;padding:11px 0;}
+  .fu-item:last-child{border-bottom:none;}
+  .fu-meta{font-size:11px;color:var(--muted);margin-bottom:3px;}
+  .fu-note{font-size:13.5px;}
+  .fu-empty{color:var(--muted);font-size:13px;padding:10px 0;}
+
+  .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#4a453e;margin:22px 0 10px;}
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:8px;font-size:13px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:100;display:none;
+  }
+  @media(max-width:640px){
+    .grid2{grid-template-columns:1fr;}
+    .container{padding:18px 14px 50px;}
+    table thead{display:none;}
+    table,tbody,tr,td{display:block;width:100%;}
+    tbody tr{border-bottom:1px solid var(--line);padding:10px 4px;}
+    tbody td{padding:4px 10px;border:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">ED</div>
+    <div>
+      <div class="name">Lead Desk</div>
+      <div class="sub">EazyDiner Sales</div>
+    </div>
+  </div>
+  <div class="who" id="whoBar" style="display:none;">
+    <span id="whoName"></span>
+    <button onclick="logout()">Log out</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <h1>Sign in</h1>
+    <p class="tag">Access the restaurant lead tracker</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" autocomplete="current-password" />
+    </div>
+    <button class="btn block" onclick="doLogin()">Sign in</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appView">
+  <div class="container">
+    <div class="head-row">
+      <h2>Restaurant Leads</h2>
+      <div class="stats" id="statsRow"></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Search restaurant, contact, ID…" oninput="renderTable()" />
+      <select id="statusFilter" onchange="renderTable()">
+        <option value="">All statuses</option>
+      </select>
+      <select id="ownerFilter" onchange="renderTable()">
+        <option value="">All salespeople</option>
+      </select>
+      <div class="spacer"></div>
+      <button class="btn small" onclick="refreshData()">↻ Refresh</button>
+      <button class="btn" onclick="openLeadModal()">+ New Lead</button>
+    </div>
+
+    <div id="tableWrap">
+      <table id="leadsTable">
+        <thead>
+          <tr>
+            <th>Restaurant</th>
+            <th>Contact</th>
+            <th>Salesperson</th>
+            <th>Status</th>
+            <th>Next follow-up</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD ADD/EDIT MODAL -->
+<div class="overlay" id="leadOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="leadModalTitle">New Lead</h3>
+        <div class="rid" id="leadModalId"></div>
+      </div>
+      <button class="modal-close" onclick="closeLeadModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field">
+          <label>Restaurant ID</label>
+          <input type="text" id="f_restaurantId" />
+        </div>
+        <div class="field">
+          <label>Restaurant Name</label>
+          <input type="text" id="f_restaurantName" />
+        </div>
+        <div class="field">
+          <label>Contact Person</label>
+          <input type="text" id="f_contactPersonName" />
+        </div>
+        <div class="field">
+          <label>Contact Number</label>
+          <input type="text" id="f_contactNumber" />
+        </div>
+        <div class="field">
+          <label>Salesperson</label>
+          <input type="text" id="f_salesPersonName" />
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="f_status"></select>
+        </div>
+        <div class="field">
+          <label>Next Follow-up Date</label>
+          <input type="date" id="f_nextFollowupDate" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Remarks</label>
+        <textarea id="f_remarks" rows="3"></textarea>
+      </div>
+
+      <div id="followupSection" style="display:none;">
+        <div class="section-title">Log a follow-up</div>
+        <div class="grid2">
+          <div class="field">
+            <label>Follow-up date</label>
+            <input type="date" id="fu_date" />
+          </div>
+          <div class="field">
+            <label>Set next follow-up</label>
+            <input type="date" id="fu_next" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="fu_notes" rows="2" placeholder="What happened on this call/visit?"></textarea>
+        </div>
+        <button class="btn ghost small" onclick="submitFollowup()">Add follow-up</button>
+
+        <div class="section-title">History</div>
+        <div id="followupList"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeLeadModal()">Cancel</button>
+      <button class="btn" onclick="saveLead()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUSES_FALLBACK = ['New','Contacted','Follow-up Scheduled','Interested','Negotiation','Won','Lost'];
+
+// Paste your deployed Google Apps Script Web App URL here before going live.
+const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+let session = JSON.parse(localStorage.getItem('ed_session') || 'null');
+let leads = [];
+let activeLeadId = null;
+let statuses = STATUSES_FALLBACK;
+
+async function api(action, payload){
+  if(!API_URL || API_URL.indexOf('PASTE_YOUR') === 0){ toast('App is not configured yet — contact your admin'); throw new Error('no api url'); }
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'}, // avoids CORS preflight on Apps Script
+    body: JSON.stringify(Object.assign({action}, payload||{}))
+  });
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display='block';
+  clearTimeout(t._h);
+  t._h = setTimeout(()=> t.style.display='none', 2600);
+}
+
+// ---------- auth ----------
+async function doLogin(){
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  if(!username || !password){ errEl.textContent = 'Enter username and password'; return; }
+  try{
+    const data = await api('login', {username, password});
+    session = data.user;
+    localStorage.setItem('ed_session', JSON.stringify(session));
+    enterApp();
+  }catch(e){
+    errEl.textContent = e.message || 'Login failed';
+  }
+}
+
+function logout(){
+  session = null;
+  localStorage.removeItem('ed_session');
+  document.getElementById('appView').style.display='none';
+  document.getElementById('whoBar').style.display='none';
+  document.getElementById('loginView').style.display='flex';
+}
+
+function enterApp(){
+  document.getElementById('loginView').style.display='none';
+  document.getElementById('appView').style.display='block';
+  document.getElementById('whoBar').style.display='flex';
+  document.getElementById('whoName').textContent = session.salesPersonName + ' · ' + session.role;
+  document.getElementById('f_salesPersonName').value = session.salesPersonName;
+  loadMeta();
+  refreshData();
+}
+
+// ---------- data ----------
+async function loadMeta(){
+  try{
+    const data = await api('getMeta', {});
+    statuses = data.statuses || STATUSES_FALLBACK;
+  }catch(e){ statuses = STATUSES_FALLBACK; }
+  const sel = document.getElementById('f_status');
+  const filt = document.getElementById('statusFilter');
+  sel.innerHTML=''; filt.innerHTML='<option value="">All statuses</option>';
+  statuses.forEach(s=>{
+    sel.innerHTML += `<option value="${s}">${s}</option>`;
+    filt.innerHTML += `<option value="${s}">${s}</option>`;
+  });
+}
+
+async function refreshData(){
+  try{
+    const data = await api('getLeads', {});
+    leads = data.leads || [];
+    populateOwnerFilter();
+    renderTable();
+    renderStats();
+  }catch(e){
+    toast(e.message);
+  }
+}
+
+function populateOwnerFilter(){
+  const owners = [...new Set(leads.map(l=>l.SalesPersonName).filter(Boolean))];
+  const sel = document.getElementById('ownerFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All salespeople</option>' + owners.map(o=>`<option value="${o}">${o}</option>`).join('');
+  sel.value = cur;
+}
+
+function renderStats(){
+  const row = document.getElementById('statsRow');
+  const counts = {};
+  leads.forEach(l=> counts[l.Status] = (counts[l.Status]||0)+1);
+  const parts = [`<div class="stat-chip"><b>${leads.length}</b> total</div>`];
+  ['New','Follow-up Scheduled','Won'].forEach(s=>{
+    if(counts[s]) parts.push(`<div class="stat-chip"><b>${counts[s]}</b> ${s}</div>`);
+  });
+  row.innerHTML = parts.join('');
+}
+
+function renderTable(){
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const statusF = document.getElementById('statusFilter').value;
+  const ownerF = document.getElementById('ownerFilter').value;
+  let rows = leads.filter(l=>{
+    if(statusF && l.Status !== statusF) return false;
+    if(ownerF && l.SalesPersonName !== ownerF) return false;
+    if(q){
+      const hay = [l.RestaurantName,l.RestaurantID,l.ContactPersonName,l.ContactNumber].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  rows.sort((a,b)=> new Date(b.UpdatedAt||0) - new Date(a.UpdatedAt||0));
+
+  const body = document.getElementById('tableBody');
+  if(rows.length===0){
+    body.innerHTML = `<tr><td colspan="6"><div class="empty">No leads match yet.<br><button class="btn small" onclick="openLeadModal()">+ Add the first lead</button></div></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(l=>{
+    const badgeClass = (l.Status||'New').replace(/\s+/g,'.');
+    return `<tr onclick="openLeadModal('${l.LeadID}')">
+      <td><div class="rname">${escapeHtml(l.RestaurantName||'—')}</div><div class="rid">${escapeHtml(l.RestaurantID||'')}</div></td>
+      <td>${escapeHtml(l.ContactPersonName||'—')}<br><span class="rid">${escapeHtml(l.ContactNumber||'')}</span></td>
+      <td>${escapeHtml(l.SalesPersonName||'—')}</td>
+      <td><span class="badge ${badgeClass}">${escapeHtml(l.Status||'New')}</span></td>
+      <td>${formatDate(l.NextFollowupDate)}</td>
+      <td class="rid">${formatDateTime(l.UpdatedAt)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function formatDate(d){ if(!d) return '—'; const dt=new Date(d); return isNaN(dt)? d : dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); }
+function formatDateTime(d){ if(!d) return '—'; const dt=new Date(d); return isNaN(dt)? d : dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); }
+
+// ---------- lead modal ----------
+function openLeadModal(leadId){
+  activeLeadId = leadId || null;
+  const l = leadId ? leads.find(x=>x.LeadID===leadId) : null;
+  document.getElementById('leadModalTitle').textContent = l ? 'Edit Lead' : 'New Lead';
+  document.getElementById('leadModalId').textContent = l ? l.LeadID : '';
+  document.getElementById('f_restaurantId').value = l?.RestaurantID || '';
+  document.getElementById('f_restaurantName').value = l?.RestaurantName || '';
+  document.getElementById('f_contactPersonName').value = l?.ContactPersonName || '';
+  document.getElementById('f_contactNumber').value = l?.ContactNumber || '';
+  document.getElementById('f_salesPersonName').value = l?.SalesPersonName || session.salesPersonName;
+  document.getElementById('f_status').value = l?.Status || 'New';
+  document.getElementById('f_nextFollowupDate').value = toDateInput(l?.NextFollowupDate);
+  document.getElementById('f_remarks').value = l?.Remarks || '';
+  document.getElementById('followupSection').style.display = l ? 'block' : 'none';
+  document.getElementById('fu_notes').value='';
+  document.getElementById('fu_date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fu_next').value='';
+  if(l) loadFollowups(l.LeadID); else document.getElementById('followupList').innerHTML='';
+  document.getElementById('leadOverlay').classList.add('open');
+}
+function closeLeadModal(){ document.getElementById('leadOverlay').classList.remove('open'); }
+function toDateInput(d){ if(!d) return ''; const dt=new Date(d); return isNaN(dt)? '' : dt.toISOString().slice(0,10); }
+
+async function saveLead(){
+  const payload = {
+    restaurantId: document.getElementById('f_restaurantId').value.trim(),
+    restaurantName: document.getElementById('f_restaurantName').value.trim(),
+    contactPersonName: document.getElementById('f_contactPersonName').value.trim(),
+    contactNumber: document.getElementById('f_contactNumber').value.trim(),
+    salesPersonName: document.getElementById('f_salesPersonName').value.trim(),
+    status: document.getElementById('f_status').value,
+    nextFollowupDate: document.getElementById('f_nextFollowupDate').value,
+    remarks: document.getElementById('f_remarks').value.trim()
+  };
+  if(!payload.restaurantName){ toast('Restaurant name is required'); return; }
+  try{
+    if(activeLeadId){
+      await api('updateLead', Object.assign({leadId:activeLeadId}, payload));
+      toast('Lead updated');
+    }else{
+      await api('addLead', payload);
+      toast('Lead created');
+    }
+    closeLeadModal();
+    refreshData();
+  }catch(e){ toast(e.message); }
+}
+
+// ---------- followups ----------
+async function loadFollowups(leadId){
+  const el = document.getElementById('followupList');
+  el.innerHTML = '<div class="fu-empty">Loading…</div>';
+  try{
+    const data = await api('getFollowups', {leadId});
+    const items = data.followups || [];
+    if(items.length===0){ el.innerHTML = '<div class="fu-empty">No follow-ups logged yet.</div>'; return; }
+    el.innerHTML = items.map(f=>`
+      <div class="fu-item">
+        <div class="fu-meta">${formatDate(f.FollowupDate)} · ${escapeHtml(f.SalesPersonName||'')}</div>
+        <div class="fu-note">${escapeHtml(f.Notes||'')}</div>
+      </div>`).join('');
+  }catch(e){ el.innerHTML = '<div class="fu-empty">Could not load history.</div>'; }
+}
+
+async function submitFollowup(){
+  if(!activeLeadId){ toast('Save the lead first'); return; }
+  const notes = document.getElementById('fu_notes').value.trim();
+  if(!notes){ toast('Add a note about the follow-up'); return; }
+  const payload = {
+    leadId: activeLeadId,
+    followupDate: document.getElementById('fu_date').value,
+    notes,
+    salesPersonName: document.getElementById('f_salesPersonName').value.trim() || session.salesPersonName,
+    nextFollowupDate: document.getElementById('fu_next').value
+  };
+  try{
+    await api('addFollowup', payload);
+    toast('Follow-up logged');
+    document.getElementById('fu_notes').value='';
+    if(payload.nextFollowupDate) document.getElementById('f_nextFollowupDate').value = payload.nextFollowupDate;
+    loadFollowups(activeLeadId);
+    refreshData();
+  }catch(e){ toast(e.message); }
+}
+
+// ---------- boot ----------
+if(session && API_URL && API_URL.indexOf('PASTE_YOUR') !== 0){ enterApp(); }
+</script>
+</body>
+</html>
